@@ -29,10 +29,10 @@ Compare the heights of each of these trees on each dataset provided.
 Implement a method which can calculate the height of an arbitrary Binary Search Tree or Red-Black Tree.
 
 Report the height of each...
-- After inserting the nodes in both test datasets
-- After deleting the nodes in deleteNodes.csv from both datasets.
+1) After inserting the nodes in both test datasets
+2) After deleting the nodes in deleteNodes.csv from both datasets.
 
-* Be sure to discuss these results in your writeup. Were they what you expected?
+- Be sure to discuss these results in your writeup. Were they what you expected?
 
 
 ## Writeup (20 points)
@@ -44,10 +44,10 @@ Include a written report of any important details about your implementation--as 
 - Credit (partial): if you are not able to get something working, or unable to generate a particular figure, explain why in your report. If you don’t explain, I can’t give partial credit.
 
 ## Rules / Expectations
-- You may not use a high-level function for implementing this structure. For example, you can’t use the max or min command in C++. If you have questions about whether a command is permissible, please ask and I will let you know.
-- As mentioned at the start of class, all code should be written in C++.
-- Please include instructions for how to compile and run your code in your writeup.
-- Explain any implementation choices you had to make in the final report (such as how ties were broken).
+1) You may not use a high-level function for implementing this structure. For example, you can’t use the max or min command in C++. If you have questions about whether a command is permissible, please ask and I will let you know.
+2) All code should be written in C++.
+3) Include instructions for how to compile and run your code in your writeup.
+4) Explain any implementation choices you had to make in the writeup (such as how ties were broken).
 
 
 # Changelog
