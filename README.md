@@ -44,5 +44,5 @@ You will include a written report with your submission detailing important detai
 
 # Changelog
 ## 20231016
-1 - Initialized Project.
-2 - Created main.cpp file and imported project instructions as README.txt.
+1) Initialized Project.
+2) Created main.cpp file and imported project instructions as README.txt.
