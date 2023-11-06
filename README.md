@@ -56,3 +56,24 @@ Include a written report of any important details about your implementation--as 
 2) Created main.cpp file and imported project instructions as README.txt.
 3) Converted instructions into code comments and pseudocode.
 4) Created the initial writeup.txt file.
+
+## 20231027
+1) Initialized header and implementation files.
+2) Set up member method declarations and definitions for Binary Search Trees.
+	- Currently working with hardcoded values.
+3) Declared member methods for Red-Black Trees.
+
+## 20231031
+1) Began writing member method definitions for Red-Black Trees.
+
+## 20231105
+1) Refactored project and rewrote BST class for readability.
+	- BST methods fully functional.
+2) Began writing RBT class, to inherit from BST class.
+
+## 20231106
+1) Refactored main.cpp for readability.
+
+### FIXES NEEDED:
+	- RBT inheritence not functioning correctly.
+	- Segmentation fault in Insertion Fix code.

@@ -1,32 +1,40 @@
-int main(int argc, char const *argv[])
+#include "trees.h"
+
+void BuildBST(BST&, std::vector<int>&);
+void DeleteBSTNodes(BST&, std::vector<int>&);
+void BuildRBT(RBT&, std::vector<int>&);
+// void DeleteRBTNodes(RBT&, std::vector<int>&);
+std::vector<int> BuildAdds(std::ifstream&);
+std::vector<int> BuildDeletes(std::ifstream&);
+
+
+int main()
 {
-	// Implement a Binary Search Tree (30 Points).
-		// Implement insertion and deletion methods...including any necessary helper function.
-		
-		// Create a linked-representation binary search tree.
-			// This will likely involve:
-			// - The creation of a node object (and potentially a tree object).
-			
-			/*
-				Remember that node objects--at a minimum--contain a key field, pointers to its left and right child, and a pointer to its parent
-			*/
-			
-			// In addition to the basic node object:
-				// Implement methods for inserting and deleting from the tree.
-				
-				// I have provided various datasets that you can use for testing.
-				// Those are testRandom, testBad, and deleteNodes.csv.
+	BST bst;
+	RBT rbt;
+	std::ifstream userData;
+	
+	std::vector<int> addKeys = BuildAdds(userData);
+	BuildBST(bst, addKeys);
+	
+	std::cout << std::endl << std::endl
+		<< "BST before deleting any nodes:" << std::endl;
+	bst.InOrderPrint(bst.GetRoot());
 
-			// Evaluate whether these methods have executed successfully...
-				// Implement an inorder traversal to print out the tree.
-					// - Keys should be printed in sorted order.
-					
-			/****
-				You may *NOT* use high-level functions for implementing this structure.
-				* For example, you cannot use the max or min command in C++.
-				* If you have questions about whether a command is permissible, please ask and I will let you know.
-			****/
+	std::cout << std::endl << std::endl;
+	
+	std::vector<int> deleteKeys = BuildDeletes(userData);
+	DeleteBSTNodes(bst, deleteKeys);
 
+	std::cout << std::endl << std::endl
+		<< "BST after deleting nodes:" << std::endl;
+	bst.InOrderPrint(bst.GetRoot());
+
+	BuildRBT(rbt, addKeys);
+
+	std::cout << std::endl << std::endl
+		<< "RBT before deleting any nodes:" << std::endl;
+	rbt.InOrderPrint(rbt.GetRoot());
 
 	// Implement a Red-Black Search Tree (30 Points).
 		// Implement insertion and deletion methods...including any necessary helper function.
@@ -50,4 +58,78 @@ int main(int argc, char const *argv[])
 		// Be sure to discuss these results in your writeup. Were they what you expected?
 
 	return 0;
+}
+
+
+void BuildBST(BST& bst, std::vector<int>& keys)
+{
+	// Convert array of node keys into a Binary Search Tree...
+	for(int index : keys)
+	{
+		Node *newNode = new Node;
+		bst.NewNode(newNode, keys[index]);
+		bst.InsertNode(newNode);
+	}
+}
+
+
+void BuildRBT(RBT& rbt, std::vector<int>& keys)
+{
+	// Convert array of node keys into a Binary Search Tree...
+	for(int index : keys)
+	{
+		Node *newNode = new Node;
+		rbt.NewNodeRB(newNode, keys[index]);
+		rbt.InsertNodeRB(newNode);
+	}
+}
+
+
+void DeleteBSTNodes(BST& bst, std::vector<int>& keys)
+{
+	for(int index : keys)
+	{
+		Node* nodeToDelete = bst.Search(bst.GetRoot(), index);
+		std::cout << "Deleting NODE: " << nodeToDelete->key << std::endl;
+
+		bst.DeleteNode(bst.GetRoot(), index);
+	}
+}
+
+
+std::vector<int> BuildAdds(std::ifstream& data)
+{
+	std::string line;
+	std::vector<int> keys;
+
+	data.open("./data/testrandom.csv");
+
+	while (std::getline(data, line))
+    {
+		std::istringstream iss(line);
+		int n;
+		while(iss >> n) { keys.push_back(n); }
+    }
+	data.close();
+
+	return keys;
+}
+
+
+std::vector<int> BuildDeletes(std::ifstream& data)
+{
+	std::string line;
+	std::vector<int> keys;
+
+	data.open("./data/deleteNodes.csv");
+
+	while (std::getline(data, line))
+    {
+		std::istringstream iss(line);
+		int n;
+		while(iss >> n) { keys.push_back(n); }
+    }
+	data.close();
+
+	return keys;	
 }
