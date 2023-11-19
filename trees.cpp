@@ -50,33 +50,48 @@ Node* Node::FindSibling()
 }
 
 
+
 //******************************************//
 //************Tree CLASS METHODS************//
 //******************************************//
 
 
+// Public Member Methods...
+
 Tree::Tree() { root = nullptr; }
 
 
-Node* Tree::Search(int key)
+void Tree::DeleteNode(int key)
 {
-	Node *temp = root;
+	Node* z = Search(key);
 
-	while (temp != nullptr)
+	if (z->left == nullptr) { Transplant(z, z->right);}
+	else if(z->right == nullptr) { Transplant(z, z->left); }
+	else
 	{
-		if (key < temp->key)
-		{
-			if (temp->left == nullptr) { break; }
-			else { temp = temp->left; }
-		}
-		else if (key == temp->key) { break; }
-		else {
-			if (temp->right == nullptr) { break; }
-			else { temp = temp->right; }
-		}
-	}
+		Node* y = GetMinimum(z->right);
 
-	return temp;
+		if (y->parent != z)
+		{
+			Transplant(y, y->right);
+			y->right = z->right;
+			y->right->parent = y;
+		}
+
+		Transplant(z, y);
+		y->left = z->left;
+		y->left->parent = y;
+	}
+}
+
+
+void Tree::DeleteNodeRBT(int key)
+{
+	if (root == nullptr) { return; }
+
+	Node *node = Search(key);
+
+	DeleteRBT(node);
 }
 
 
@@ -127,185 +142,39 @@ void Tree::InsertNodeRBT(int key)
 }
 
 
-void Tree::DeleteNode(int key)
-{
-	Node* z = Search(key);
-
-	if (z->left == nullptr) { Transplant(z, z->right);}
-	else if(z->right == nullptr) { Transplant(z, z->left); }
-	else
-	{
-		Node* y = GetMinimum(z->right);
-
-		if (y->parent != z)
-		{
-			Transplant(y, y->right);
-			y->right = z->right;
-			y->right->parent = y;
-		}
-
-		Transplant(z, y);
-		y->left = z->left;
-		y->left->parent = y;
-	}
-}
-
-
-void Tree::DeleteNodeRBT(int key)
-{
-	if (root == nullptr) { return; }
-
-	Node *node = Search(key);
-
-	DeleteRBT(node);
-}
-
-
 void Tree::PrintInOrder()
 {
 	std::cout << "In Order Print: " << std::endl;
-	InOrderTraversal(root);
+	height = InOrderTraversal(root);
 }
 
 
-int Tree::GetHeight() { return CalculateHeight(root); }
+int Tree::GetHeight() { return height; }
 
 
-void Tree::RotateLeft(Node* node)
+Node* Tree::Search(int key)
 {
-	Node *newParent = node->right;
+	Node *temp = root;
 
-	if (node == root) { root = newParent; }
-
-	node->MoveDown(newParent);
-
-	node->right = newParent->left;
-
-	if (newParent->left != nullptr) { newParent->left->parent = node; }
-
-	newParent->left = node;
-}
-
-
-void Tree::RotateRight(Node* node)
-{
-	Node *nParent = node->left;
-
-	if (node == root) { root = nParent; }
-
-	node->MoveDown(nParent);
-	node->left = nParent->right;
-
-	if (nParent->right != nullptr) { nParent->right->parent = node; }
-
-	nParent->right = node;
-}
-
-
-void Tree::SwapColors(Node* node1, Node* node2)
-{
-	Color temp;
-	temp = node1->color;
-	node1->color = node2->color;
-	node2->color = temp;
-}
-
-
-void Tree::SwapKeys(Node* node1, Node* node2)
-{
-	int temp;
-	temp = node1->key;
-	node1->key = node2->key;
-	node2->key = temp;
-}
-
-
-void Tree::FixDoubleRed(Node* node)
-{
-	if (node == root)
+	while (temp != nullptr)
 	{
-		node->color = BLACK;
-		return;
-	}
-
-	Node* parent = node->parent;
-	Node* grandparent = parent->parent;
-	Node* uncle = node->FindUncle();
-
-	if (parent->color != BLACK)
-	{
-		if (uncle != nullptr && uncle->color == RED)
+		if (key < temp->key)
 		{
-			parent->color = BLACK;
-			uncle->color = BLACK;
-			grandparent->color = RED;
-			FixDoubleRed(grandparent);
+			if (temp->left == nullptr) { break; }
+			else { temp = temp->left; }
 		}
-		else
-		{
-			if (parent->IsOnLeft())
-			{
-				if (node->IsOnLeft()) { SwapColors(parent, grandparent); }
-				else
-				{
-					RotateLeft(parent);
-					SwapColors(node, grandparent);
-				}
-				
-				RotateRight(grandparent);
-			}
-			else
-			{
-				if (node->IsOnLeft())
-				{
-					RotateRight(parent);
-					SwapColors(node, grandparent);
-				}
-				else { SwapColors(parent, grandparent); }
-
-				RotateLeft(grandparent);
-			}
+		else if (key == temp->key) { break; }
+		else {
+			if (temp->right == nullptr) { break; }
+			else { temp = temp->right; }
 		}
 	}
-}
-
-
-Node* Tree::Successor(Node* node)
-{
-	Node *temp = node;
-
-	while (temp->left != nullptr) { temp = temp->left; }
 
 	return temp;
 }
 
 
-
-Node* Tree::Replace(Node *node)
-{
-	if (node->left != nullptr and node->right != nullptr) { return Successor(node->right); }	// Node has TWO CHILDREN
-	else if (node->left != nullptr) { return node->left; }										// Node only has LEFT CHILD
-	else if (node->right != nullptr) { return node->right; }									// Node only has RIGHT CHILD
-	else { return nullptr; }																	// Node has NO CHILDREN
-}
-
-
-void Tree::Transplant(Node* u, Node* v)
-{
-	if (u->parent == nullptr) { root = v; }
-	else if (u == u->parent->left) { u->parent->left = v; }
-	else { u->parent->right = v; }
-
-	if (v != nullptr) { v->parent = u->parent; }
-}
-
-
-Node* Tree::GetMinimum(Node* node)
-{
-	while (node->left != nullptr) { node = node->left; }
-
-	return node;
-}
+// Private Member Methods...
 
 
 void Tree::DeleteRBT(Node *tempNode)
@@ -431,30 +300,154 @@ void Tree::FixDoubleBlack(Node* node)
 }
 
 
-int Tree::CalculateHeight(Node* node)
+void Tree::FixDoubleRed(Node* node)
 {
-	// Get the height of the tree
-	if (node == nullptr) { return 0; }
-	else
+	if (node == root)
 	{
-		int left_height = CalculateHeight(node->left);
-		int right_height = CalculateHeight(node->right);
+		node->color = BLACK;
+		return;
+	}
 
-		if (left_height >= right_height) { return left_height + 1; }
-		else { return right_height + 1; }
+	Node* parent = node->parent;
+	Node* grandparent = parent->parent;
+	Node* uncle = node->FindUncle();
+
+	if (parent->color != BLACK)
+	{
+		if (uncle != nullptr && uncle->color == RED)
+		{
+			parent->color = BLACK;
+			uncle->color = BLACK;
+			grandparent->color = RED;
+			FixDoubleRed(grandparent);
+		}
+		else
+		{
+			if (parent->IsOnLeft())
+			{
+				if (node->IsOnLeft()) { SwapColors(parent, grandparent); }
+				else
+				{
+					RotateLeft(parent);
+					SwapColors(node, grandparent);
+				}
+				
+				RotateRight(grandparent);
+			}
+			else
+			{
+				if (node->IsOnLeft())
+				{
+					RotateRight(parent);
+					SwapColors(node, grandparent);
+				}
+				else { SwapColors(parent, grandparent); }
+
+				RotateLeft(grandparent);
+			}
+		}
 	}
 }
 
 
-void Tree::InOrderTraversal(Node* node)
+void Tree::RotateLeft(Node* node)
 {
-	if (node == nullptr) { return; }
+	Node *newParent = node->right;
+
+	if (node == root) { root = newParent; }
+
+	node->MoveDown(newParent);
+
+	node->right = newParent->left;
+
+	if (newParent->left != nullptr) { newParent->left->parent = node; }
+
+	newParent->left = node;
+}
+
+
+void Tree::RotateRight(Node* node)
+{
+	Node *nParent = node->left;
+
+	if (node == root) { root = nParent; }
+
+	node->MoveDown(nParent);
+	node->left = nParent->right;
+
+	if (nParent->right != nullptr) { nParent->right->parent = node; }
+
+	nParent->right = node;
+}
+
+
+void Tree::SwapColors(Node* node1, Node* node2)
+{
+	Color temp;
+	temp = node1->color;
+	node1->color = node2->color;
+	node2->color = temp;
+}
+
+
+void Tree::SwapKeys(Node* node1, Node* node2)
+{
+	int temp;
+	temp = node1->key;
+	node1->key = node2->key;
+	node2->key = temp;
+}
+
+
+void Tree::Transplant(Node* u, Node* v)
+{
+	if (u->parent == nullptr) { root = v; }
+	else if (u == u->parent->left) { u->parent->left = v; }
+	else { u->parent->right = v; }
+
+	if (v != nullptr) { v->parent = u->parent; }
+}
+
+
+int Tree::InOrderTraversal(Node* node)
+{
+	if (node == nullptr) { return 0; }
 	else
 	{
-		InOrderTraversal(node->left);
+		int left = InOrderTraversal(node->left);
 		std::cout << node->key << " ";
-		InOrderTraversal(node->right);
+		int right = InOrderTraversal(node->right);
+
+		if (left >= right) { return left + 1; }
+		else { return right + 1; }
 	}
+}
+
+
+Node* Tree::GetMinimum(Node* node)
+{
+	while (node->left != nullptr) { node = node->left; }
+
+	return node;
+}
+
+
+Node* Tree::Replace(Node *node)
+{
+	if (node->left != nullptr and node->right != nullptr) { return Successor(node->right); }	// Node has TWO CHILDREN
+	else if (node->left != nullptr) { return node->left; }										// Node only has LEFT CHILD
+	else if (node->right != nullptr) { return node->right; }									// Node only has RIGHT CHILD
+	else { return nullptr; }																	// Node has NO CHILDREN
+}
+
+
+Node* Tree::Successor(Node* node)
+{
+	Node *temp = node;
+
+	while (temp->left != nullptr) { temp = temp->left; }
+
+	return temp;
 }
 
 

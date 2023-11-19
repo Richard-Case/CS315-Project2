@@ -102,3 +102,5 @@ After completely rewriting the program four times using the pseudocode provided 
 	- Finished.
 
 ### It appears as though everything is functioning as intended.
+
+5) Cleaned up the code for submission.

@@ -1,2 +1,0 @@
-Include instructions for how to compile and run your code.
-Explain any implementation choices you had to make (such as how ties were broken).

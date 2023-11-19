@@ -29,9 +29,6 @@ public:
 	Node* FindUncle();
 	Node* FindSibling();
 
-
-	//**Public Variables**//
-
 	int key;
 	Color color;
 	Node* left;
@@ -45,50 +42,34 @@ class Tree
 public:
 	Tree();
 
-	Node* Search(int);
-
-	void InsertNode(int);
-	void InsertNodeRBT(int);
-
-	// Deletes node with the given KEY...
 	void DeleteNode(int);
 	void DeleteNodeRBT(int);
-
-	// prints inorder of the tree
+	void InsertNode(int);
+	void InsertNodeRBT(int);
 	void PrintInOrder();
 
-	// prints level order of the tree
 	int GetHeight();
 
-private:
-	Node* root;
+	Node* Search(int);
 
+private:
+	void DeleteRBT(Node*);
+	void FixDoubleBlack(Node*);
+	void FixDoubleRed(Node*);
 	void RotateLeft(Node*);
 	void RotateRight(Node*);
-
-	// Swaps first node's color with the second node's color.
 	void SwapColors(Node*, Node*);
-
-	// Swaps first node's key with the second node's key.
 	void SwapKeys(Node*, Node*);
-
-	void FixDoubleRed(Node*);
-
-	Node* Successor(Node*);
-
-	Node* Replace(Node*);
-
 	void Transplant(Node*, Node*);
 
+	int InOrderTraversal(Node*);
+	
 	Node* GetMinimum(Node*);
+	Node* Replace(Node*);
+	Node* Successor(Node*);
 
-	void DeleteRBT(Node*);
-
-	void FixDoubleBlack(Node*);
-
-	int CalculateHeight(Node*);
-
-	void InOrderTraversal(Node*);
+	Node* root;
+	int height;
 };
 
 #endif
