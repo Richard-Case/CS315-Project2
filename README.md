@@ -70,10 +70,35 @@ Include a written report of any important details about your implementation--as 
 1) Refactored project and rewrote BST class for readability.
 	- BST methods fully functional.
 2) Began writing RBT class, to inherit from BST class.
+	- Segmentation Fault ocurring with RBT Fixup code.
 
 ## 20231106
 1) Refactored main.cpp for readability.
 
-### FIXES NEEDED:
-	- RBT inheritence not functioning correctly.
-	- Segmentation fault in Insertion Fix code.
+## 20231107
+1) Refactored BST and RBT to be a single "Tree" class.
+	- Unable to resolve segmentation fault.
+	- Attempting to narrow down possible causes.
+
+## 20231110
+1) Created a series of output statements to act as checkpoints within the InsertNodeFixup() method.
+	- Was able to determine that the problem lie in attempting to access non-existent nodes.
+	- Resolved by adding an existence checks to most of the if statements.
+2) Began coding DeleteNodeRB() method.
+	- More segmentation fault errors. A lot more.
+
+## 20231117
+After completely rewriting the program four times using the pseudocode provided in class, and continually encountering the same segmentation faults, I've decided to re-do the entire program using the explanations provided here: https://www.geeksforgeeks.org/deletion-in-red-black-tree/?ref=lbp#
+
+1) Beginning to refactor code.
+
+## 20231118
+1) Finished refactoring code.
+2) Converted to work with provided data files, rather than "magic" numbers.
+	- Program appears to compile and run correctly.
+3) Attempting to add code to calculate the height of the RBT.
+	- Finished with this.
+4) Lastly, I need to re-integrate the original BST into this program.
+	- Finished.
+
+### It appears as though everything is functioning as intended.

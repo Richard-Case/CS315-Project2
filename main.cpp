@@ -1,115 +1,143 @@
 #include "trees.h"
 
-void BuildBST(BST&, std::vector<int>&);
-void DeleteBSTNodes(BST&, std::vector<int>&);
-void BuildRBT(RBT&, std::vector<int>&);
-// void DeleteRBTNodes(RBT&, std::vector<int>&);
-std::vector<int> BuildAdds(std::ifstream&);
-std::vector<int> BuildDeletes(std::ifstream&);
+void BuildBST(Tree&, std::vector<int>&);
+void BuildRBT(Tree&, std::vector<int>&);
+void DeleteBSTNodes(Tree&, std::vector<int>&);
+void DeleteRBTNodes(Tree&, std::vector<int>&);
 
+std::vector<int> BuildAdds(std::ifstream&, std::string);
+std::vector<int> BuildDeletes(std::ifstream&);
 
 int main()
 {
-	BST bst;
-	RBT rbt;
+	Tree bstRand;
+	Tree bstBad;
+	Tree rbtRand;
+	Tree rbtBad;
+
 	std::ifstream userData;
-	
-	std::vector<int> addKeys = BuildAdds(userData);
-	BuildBST(bst, addKeys);
-	
-	std::cout << std::endl << std::endl
-		<< "BST before deleting any nodes:" << std::endl;
-	bst.InOrderPrint(bst.GetRoot());
 
-	std::cout << std::endl << std::endl;
-	
+	std::vector<int> addKeysBad = BuildAdds(userData, "data/testBad.csv");
+	std::vector<int> addKeysRand = BuildAdds(userData, "data/testRandom.csv");
 	std::vector<int> deleteKeys = BuildDeletes(userData);
-	DeleteBSTNodes(bst, deleteKeys);
-
-	std::cout << std::endl << std::endl
-		<< "BST after deleting nodes:" << std::endl;
-	bst.InOrderPrint(bst.GetRoot());
-
-	BuildRBT(rbt, addKeys);
-
-	std::cout << std::endl << std::endl
-		<< "RBT before deleting any nodes:" << std::endl;
-	rbt.InOrderPrint(rbt.GetRoot());
-
-	// Implement a Red-Black Search Tree (30 Points).
-		// Implement insertion and deletion methods...including any necessary helper function.
-		
-		// Extend the binary search tree into a red-black tree so that it remains somewhat balanced.
-		
-		// Test the red black tree using the data provided paired with an inorder traversal.
 
 
-	// Calculate the height of each tree (20 Points).
-		// Compare the heights of each of these trees on each dataset provided.
-		
-		// Implement a method which can calculate the height of an arbitrary Binary Search Tree or Red-Black Tree.
+	std::cout << "Implementing with 'Random' data file..." << std::endl << std::endl;
 
-		/**** HINT: This can be done using an inorder traversal. You don’t need to do this, but I found it pretty easy to implement. ****/
-		
-		// Report the height of both...
-			// - After inserting the nodes in each dataset
-			// - After deleting the nodes in deleteNodes.csv from each dataset.
-			
-		// Be sure to discuss these results in your writeup. Were they what you expected?
+	BuildBST(bstRand, addKeysRand);
+	bstRand.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << bstRand.GetHeight()
+			  << std::endl << std::endl;
+
+	DeleteBSTNodes(bstRand, deleteKeys);
+	bstRand.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << bstRand.GetHeight()
+			  << std::endl << std::endl << std::endl << std::endl;
+
+	BuildRBT(rbtRand, addKeysRand);
+	rbtRand.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << rbtRand.GetHeight()
+			  << std::endl << std::endl;
+
+	DeleteRBTNodes(rbtRand, deleteKeys);
+	rbtRand.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << rbtRand.GetHeight()
+			  << std::endl << std::endl << std::endl << std::endl;
+	
+
+	std::cout << "Implementing with 'Bad' data file..." << std::endl << std::endl;
+
+	BuildBST(bstBad, addKeysBad);
+	bstBad.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << bstBad.GetHeight()
+			  << std::endl << std::endl;
+
+	DeleteBSTNodes(bstBad, deleteKeys);
+	bstBad.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << bstBad.GetHeight()
+			  << std::endl << std::endl << std::endl << std::endl;
+
+	BuildRBT(rbtBad, addKeysBad);
+	rbtBad.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << rbtBad.GetHeight()
+			  << std::endl << std::endl;
+
+	DeleteRBTNodes(rbtBad, deleteKeys);
+	rbtBad.PrintInOrder();
+	std::cout << std::endl << "Tree Height: " << rbtBad.GetHeight()
+			  << std::endl << std::endl;
 
 	return 0;
 }
 
 
-void BuildBST(BST& bst, std::vector<int>& keys)
+
+void BuildBST(Tree& bst, std::vector<int>& keys)
 {
-	// Convert array of node keys into a Binary Search Tree...
-	for(int index : keys)
+	std::cout << "Inserting Nodes: " << std::endl;
+
+	for (int index = 0; index < keys.size(); index++)
 	{
-		Node *newNode = new Node;
-		bst.NewNode(newNode, keys[index]);
-		bst.InsertNode(newNode);
+		std::cout << keys[index] << " ";
+		bst.InsertNode(keys[index]);
 	}
+
+	std::cout << std::endl << std::endl;
+}
+
+void BuildRBT(Tree& rbt, std::vector<int>& keys)
+{
+	std::cout << "Inserting Nodes: " << std::endl;
+
+	for (int index = 0; index < keys.size(); index++)
+	{
+		std::cout << keys[index] << " ";
+		rbt.InsertNodeRBT(keys[index]);
+	}
+
+	std::cout << std::endl << std::endl;
 }
 
 
-void BuildRBT(RBT& rbt, std::vector<int>& keys)
+void DeleteBSTNodes(Tree& bst, std::vector<int>& keys)
 {
-	// Convert array of node keys into a Binary Search Tree...
-	for(int index : keys)
+	std::cout << "Deleting Nodes: " << std::endl;
+	for(int index = 0; index < keys.size(); index++)
 	{
-		Node *newNode = new Node;
-		rbt.NewNodeRB(newNode, keys[index]);
-		rbt.InsertNodeRB(newNode);
+		std::cout << keys[index] << " ";
+		bst.DeleteNode(keys[index]);
 	}
+
+	std::cout << std::endl << std::endl;
 }
 
 
-void DeleteBSTNodes(BST& bst, std::vector<int>& keys)
+void DeleteRBTNodes(Tree& rbt, std::vector<int>& keys)
 {
-	for(int index : keys)
+	std::cout << "Deleting Nodes: " << std::endl;
+	for(int index = 0; index < keys.size(); index++)
 	{
-		Node* nodeToDelete = bst.Search(bst.GetRoot(), index);
-		std::cout << "Deleting NODE: " << nodeToDelete->key << std::endl;
-
-		bst.DeleteNode(bst.GetRoot(), index);
+		std::cout << keys[index] << " ";
+		rbt.DeleteNodeRBT(keys[index]);
 	}
+
+	std::cout << std::endl << std::endl;
 }
 
 
-std::vector<int> BuildAdds(std::ifstream& data)
+std::vector<int> BuildAdds(std::ifstream& data, std::string fileName)
 {
 	std::string line;
 	std::vector<int> keys;
 
-	data.open("./data/testrandom.csv");
+	data.open(fileName);
 
 	while (std::getline(data, line))
-    {
+	{
 		std::istringstream iss(line);
 		int n;
 		while(iss >> n) { keys.push_back(n); }
-    }
+	}
 	data.close();
 
 	return keys;
@@ -124,11 +152,11 @@ std::vector<int> BuildDeletes(std::ifstream& data)
 	data.open("./data/deleteNodes.csv");
 
 	while (std::getline(data, line))
-    {
+	{
 		std::istringstream iss(line);
 		int n;
 		while(iss >> n) { keys.push_back(n); }
-    }
+	}
 	data.close();
 
 	return keys;	

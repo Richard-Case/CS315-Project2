@@ -3,252 +3,459 @@
 
 #include "trees.h"
 
-//**********BST METHODS**********//
-BST::BST()
-{
-	root = nullptr;
-	nil = nullptr;
-}
+//******************************************//
+//************NODE CLASS METHODS************//
+//******************************************//
 
-void BST::NewNode(Node* node, int key)
+Node::Node(int key) : key(key)
 {
-	node->key = key;
-	node->parent = nullptr;
-	node->left = nil;
-	node->right = nil;
-	node->red = true;
+	parent = left = right = nullptr;
+	color = RED;
 }
 
 
-void BST::InsertNode(Node* node)
-{
-	Node* x = this->root;
-	Node* y = nil;
+bool Node::HasRedChild() { return ((left != nullptr && left->color == RED) || (right != nullptr && right->color == RED)); }
 
-	while(x != nil)
+bool Node::IsOnLeft() { return this == parent->left; }
+
+
+void Node::MoveDown(Node *nodeParent)
+{
+	if (parent != nullptr)
+	{
+		if (IsOnLeft()) { parent->left = nodeParent; }
+		else { parent->right = nodeParent; }
+	}
+	
+	nodeParent->parent = parent;
+	parent = nodeParent;
+}
+
+
+Node* Node::FindUncle()
+{
+	if (parent == nullptr or parent->parent == nullptr) { return nullptr; }
+
+	if (parent->IsOnLeft()) { return parent->parent->right; }
+	else { return parent->parent->left; }
+}
+
+
+Node* Node::FindSibling()
+{
+	if (parent == nullptr) { return nullptr; }
+
+	if (IsOnLeft()) { return parent->right; }
+	else { return parent->left; }
+}
+
+
+//******************************************//
+//************Tree CLASS METHODS************//
+//******************************************//
+
+
+Tree::Tree() { root = nullptr; }
+
+
+Node* Tree::Search(int key)
+{
+	Node *temp = root;
+
+	while (temp != nullptr)
+	{
+		if (key < temp->key)
+		{
+			if (temp->left == nullptr) { break; }
+			else { temp = temp->left; }
+		}
+		else if (key == temp->key) { break; }
+		else {
+			if (temp->right == nullptr) { break; }
+			else { temp = temp->right; }
+		}
+	}
+
+	return temp;
+}
+
+
+void Tree::InsertNode(int key)
+{
+	Node *newNode = new Node(key);
+
+	Node* y = nullptr;
+	Node* x = root;
+
+	while (x != nullptr)
 	{
 		y = x;
-		if (node->key < x->key) { x = x->left; }
+		if (newNode->key < x->key) { x = x->left; }
 		else { x = x->right; }
 	}
 
-	node->parent = y;
+	newNode->parent = y;
 
-	if (y == nil) { root = node; }
-	else if (node->key < y->key) { y->left = node; }
-	else { y->right = node; }
+	if (y == nullptr) { root = newNode; }
+	else if(newNode->key < y->key) { y->left = newNode; }
+	else { y->right = newNode; }
 }
 
-Node* BST::DeleteNode(Node* node, int key)
+
+void Tree::InsertNodeRBT(int key)
 {
-	if (node == nil) { return node;}
+	Node *newNode = new Node(key);
 
-	if (node->key > key)
+	if (root == nullptr)
 	{
-		node->left = DeleteNode(node->left, key);
-		return node;
+		newNode->color = BLACK;
+		root = newNode;
 	}
-	else if (node->key < key)
+	else
 	{
-		node->right = DeleteNode(node->right, key);
-		return node;
-	}
+		Node *temp = Search(key);
 
-	// If the node has one child...
-	if (node->left == nil)
-	{
-		Node* temp = node->right;
-		delete node;
-		return temp;
-	}
-	else if (node->right == nil)
-	{
-		Node* temp = node->left;
-		delete node;
-		return temp;
-	}
-	else // If the node has two children...
-	{
-		Node* parent = node;
-		Node* successor = node->right;
+		if (temp->key == key) { return; }
 
-		while (successor->left != nil)
+		newNode->parent = temp;
+
+		if (key < temp->key) { temp->left = newNode; }
+		else { temp->right = newNode; }
+
+		FixDoubleRed(newNode);
+	}
+}
+
+
+void Tree::DeleteNode(int key)
+{
+	Node* z = Search(key);
+
+	if (z->left == nullptr) { Transplant(z, z->right);}
+	else if(z->right == nullptr) { Transplant(z, z->left); }
+	else
+	{
+		Node* y = GetMinimum(z->right);
+
+		if (y->parent != z)
 		{
-			parent = successor;
-			successor = successor->left;
+			Transplant(y, y->right);
+			y->right = z->right;
+			y->right->parent = y;
 		}
 
-		if (parent != node) { parent->left = successor->right; }
-		else { parent->right = successor->right; }
-
-		node->key = successor->key;
-
-		delete successor;
-		return node;
+		Transplant(z, y);
+		y->left = z->left;
+		y->left->parent = y;
 	}
 }
 
-void BST::Transplant(Node* node, Node* right)
+
+void Tree::DeleteNodeRBT(int key)
 {
-	if (node->parent == nil) { this->root = right; }
-	else if (node == node->parent->left) { node->parent->left = right; }
-	else { node->parent->right = right; }
-	
-	if (right != nil) { right->parent = node->parent; }
+	if (root == nullptr) { return; }
+
+	Node *node = Search(key);
+
+	DeleteRBT(node);
 }
 
-Node* BST::Minimum(Node* node)
+
+void Tree::PrintInOrder()
 {
-	while (node->left != nil) { node = node->left; }
+	std::cout << "In Order Print: " << std::endl;
+	InOrderTraversal(root);
+}
+
+
+int Tree::GetHeight() { return CalculateHeight(root); }
+
+
+void Tree::RotateLeft(Node* node)
+{
+	Node *newParent = node->right;
+
+	if (node == root) { root = newParent; }
+
+	node->MoveDown(newParent);
+
+	node->right = newParent->left;
+
+	if (newParent->left != nullptr) { newParent->left->parent = node; }
+
+	newParent->left = node;
+}
+
+
+void Tree::RotateRight(Node* node)
+{
+	Node *nParent = node->left;
+
+	if (node == root) { root = nParent; }
+
+	node->MoveDown(nParent);
+	node->left = nParent->right;
+
+	if (nParent->right != nullptr) { nParent->right->parent = node; }
+
+	nParent->right = node;
+}
+
+
+void Tree::SwapColors(Node* node1, Node* node2)
+{
+	Color temp;
+	temp = node1->color;
+	node1->color = node2->color;
+	node2->color = temp;
+}
+
+
+void Tree::SwapKeys(Node* node1, Node* node2)
+{
+	int temp;
+	temp = node1->key;
+	node1->key = node2->key;
+	node2->key = temp;
+}
+
+
+void Tree::FixDoubleRed(Node* node)
+{
+	if (node == root)
+	{
+		node->color = BLACK;
+		return;
+	}
+
+	Node* parent = node->parent;
+	Node* grandparent = parent->parent;
+	Node* uncle = node->FindUncle();
+
+	if (parent->color != BLACK)
+	{
+		if (uncle != nullptr && uncle->color == RED)
+		{
+			parent->color = BLACK;
+			uncle->color = BLACK;
+			grandparent->color = RED;
+			FixDoubleRed(grandparent);
+		}
+		else
+		{
+			if (parent->IsOnLeft())
+			{
+				if (node->IsOnLeft()) { SwapColors(parent, grandparent); }
+				else
+				{
+					RotateLeft(parent);
+					SwapColors(node, grandparent);
+				}
+				
+				RotateRight(grandparent);
+			}
+			else
+			{
+				if (node->IsOnLeft())
+				{
+					RotateRight(parent);
+					SwapColors(node, grandparent);
+				}
+				else { SwapColors(parent, grandparent); }
+
+				RotateLeft(grandparent);
+			}
+		}
+	}
+}
+
+
+Node* Tree::Successor(Node* node)
+{
+	Node *temp = node;
+
+	while (temp->left != nullptr) { temp = temp->left; }
+
+	return temp;
+}
+
+
+
+Node* Tree::Replace(Node *node)
+{
+	if (node->left != nullptr and node->right != nullptr) { return Successor(node->right); }	// Node has TWO CHILDREN
+	else if (node->left != nullptr) { return node->left; }										// Node only has LEFT CHILD
+	else if (node->right != nullptr) { return node->right; }									// Node only has RIGHT CHILD
+	else { return nullptr; }																	// Node has NO CHILDREN
+}
+
+
+void Tree::Transplant(Node* u, Node* v)
+{
+	if (u->parent == nullptr) { root = v; }
+	else if (u == u->parent->left) { u->parent->left = v; }
+	else { u->parent->right = v; }
+
+	if (v != nullptr) { v->parent = u->parent; }
+}
+
+
+Node* Tree::GetMinimum(Node* node)
+{
+	while (node->left != nullptr) { node = node->left; }
+
 	return node;
 }
 
-Node* BST::Maximum(Node* node)
-{
-	while (node->right != nil) { node = node->right; }
-	return node;
-}
 
-void BST::InOrderPrint(Node* node) const
+void Tree::DeleteRBT(Node *tempNode)
 {
-	if (node != nil)
+	Node *nodeToDelete = Replace(tempNode);
+
+	bool bothNodesBlack = ((nodeToDelete == nullptr || nodeToDelete->color == BLACK) && (tempNode->color == BLACK));
+	Node *parent = tempNode->parent;
+
+
+	if (nodeToDelete == nullptr)																						// tempNode has NO CHILDREN
 	{
-		InOrderPrint(node->left);
-		std::cout << node->key << ", ";
-		InOrderPrint(node->right);
+		if (tempNode == root) { root = nullptr; }
+		else
+		{
+			if (bothNodesBlack) { FixDoubleBlack(tempNode); }
+			else { if (tempNode->FindSibling() != nullptr) { tempNode->FindSibling()->color = RED; }}
+
+			if (tempNode->IsOnLeft()) { parent->left = nullptr; }
+			else { parent->right = nullptr; }
+		}
+
+		delete tempNode;
+		return;
+	}
+	else if (tempNode->left == nullptr or tempNode->right == nullptr)													// tempNode has ONE CHILD
+	{
+		if (tempNode == root)
+		{
+			tempNode->key = nodeToDelete->key;
+			tempNode->left = tempNode->right = nullptr;
+			delete nodeToDelete;
+		}
+		else
+		{
+			if (tempNode->IsOnLeft()) { parent->left = nodeToDelete; }
+			else { parent->right = nodeToDelete; }
+
+			delete tempNode;
+			nodeToDelete->parent = parent;
+			
+			if (bothNodesBlack) { FixDoubleBlack(nodeToDelete); }
+			else { nodeToDelete->color = BLACK; }
+		}
+
+		return;
+	}
+	else																												// tempNode has TWO CHILDREN
+	{
+		SwapKeys(nodeToDelete, tempNode);
+		DeleteRBT(nodeToDelete);
 	}
 }
 
-Node* BST::GetRoot() const { return root; }
 
-Node* BST::Search(Node* x, int key) const
+void Tree::FixDoubleBlack(Node* node)
 {
-	if (x == nil || key == x->key) { return x; }
-	if (key < x->key) { return Search(x->left, key); }
-	else { return Search(x->right, key); }
-}
+	if (node == root) { return; }
+ 
+	Node* sibling = node->FindSibling();
+	Node* parent = node->parent;
 
-
-//**********RBT METHODS**********//
-
-RBT::RBT() { root = nil; }
-
-void RBT::RotateLeft(Node* x)
-{
-	Node* y = x->right;
-	x->right = y->left;
-
-	if (y->left != nil) { y->left->parent = x; }
-
-	y->parent = x->parent;
-
-	if (x->parent == nil) {root = y; }
-	else if (x == x->parent->left) { x->parent->left = y; }
-	else { x->parent->right = y; }
-
-	y->left = x;
-	x->parent = y;
-}
-
-void RBT::RotateRight(Node* x)
-{
-	Node* y = x->left;
-	x->left = y->right;
-
-	if (y->right != nil) { y->right->parent = x; }
-
-	y->parent = x->parent;
-
-	if (x->parent == nil) {root = y; }
-	else if (x == x->parent->right) { x->parent->right = y; }
-	else { x->parent->left = y; }
-
-	y->right = x;
-	x->parent = y;
-}
-
-void RBT::NewNodeRB(Node* node, int key)
-{
-	node->key = key;
-	node->parent = nullptr;
-	node->left = nil;
-	node->right = nil;
-	node->red = true;
-}
-
-void RBT::InsertNodeRB(Node* node)
-{
-	Node* x = this->root;
-	Node* y = nil;
-
-	while(x != nil)
+	if (sibling == nullptr) { FixDoubleBlack(parent); }
+	else
 	{
-		y = x;
-		if (node->key < x->key) { x = x->left; }
-		else { x = x->right; }
+		if (sibling->color == RED)
+		{
+			parent->color = RED;
+			sibling->color = BLACK;
+
+			if (sibling->IsOnLeft())
+			{ RotateRight(parent); }
+			else { RotateLeft(parent); }
+
+			FixDoubleBlack(node);
+		}
+		else
+		{
+			if (sibling->HasRedChild())
+			{
+				if (sibling->left != nullptr and sibling->left->color == RED)
+				{
+					if (sibling->IsOnLeft())
+					{
+						sibling->left->color = sibling->color;
+						sibling->color = parent->color;
+						RotateRight(parent);
+					}
+					else
+					{
+						sibling->left->color = parent->color;
+						RotateRight(sibling);
+						RotateLeft(parent);
+					}
+				}
+				else
+				{
+					if (sibling->IsOnLeft())
+					{
+						sibling->right->color = parent->color;
+						RotateLeft(sibling);
+						RotateRight(parent);
+					}
+					else
+					{
+						sibling->right->color = sibling->color;
+						sibling->color = parent->color;
+						RotateLeft(parent);
+					}
+				}
+
+				parent->color = BLACK;
+			}
+			else
+			{
+				sibling->color = RED;
+
+				if (parent->color == BLACK) { FixDoubleBlack(parent); }
+				else { parent->color = BLACK; }
+			}
+	  	}
 	}
-
-	node->parent = y;
-
-	if (y == nil) { root = node; }
-	else if (node->key < y->key) { y->left = node; }
-	else { y->right = node; }
-
-	// while(node->parent->red == true)
-	// {
-	// 	if(node->parent == node->parent->parent->right)
-	// 	{
-	// 		Node* temp = node->parent->parent->left;
-
-	// 		if(temp->red == true)
-	// 		{
-	// 			temp->red = false;
-	// 			node->parent->red = false;
-	// 			node->parent->parent->red = true;
-	// 			node = node->parent->parent;
-	// 		}
-	// 		else
-	// 		{
-	// 			if(node == node->parent->left)
-	// 			{
-	// 				node = node->parent;
-	// 				RotateLeft(node->parent->parent);
-	// 			}
-
-	// 			node->parent->red = false;
-	// 			node->parent->parent->red = true;
-	// 			RotateRight(node->parent->parent);
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		Node* temp = node->parent->parent->right;
-
-	// 		if(temp->red == true)
-	// 		{
-	// 			temp->red = false;
-	// 			node->parent->red = false;
-	// 			node->parent->parent->red = true;
-	// 			node = node->parent->parent;
-	// 		}
-	// 		else
-	// 		{
-	// 			if(node == node->parent->right)
-	// 			{
-	// 				node = node->parent;
-	// 				RotateLeft(node->parent->parent);
-	// 			}
-
-	// 			node->parent->red = false;
-	// 			node->parent->parent->red = true;
-	// 			RotateRight(node->parent->parent);
-	// 		}
-	// 	}
-	// }
-	// root->red = false;
 }
 
-Node* RBT::GetRoot() const { return root; }
+
+int Tree::CalculateHeight(Node* node)
+{
+	// Get the height of the tree
+	if (node == nullptr) { return 0; }
+	else
+	{
+		int left_height = CalculateHeight(node->left);
+		int right_height = CalculateHeight(node->right);
+
+		if (left_height >= right_height) { return left_height + 1; }
+		else { return right_height + 1; }
+	}
+}
+
+
+void Tree::InOrderTraversal(Node* node)
+{
+	if (node == nullptr) { return; }
+	else
+	{
+		InOrderTraversal(node->left);
+		std::cout << node->key << " ";
+		InOrderTraversal(node->right);
+	}
+}
 
 
 #endif
